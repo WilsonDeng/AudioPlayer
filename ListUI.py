@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'List.ui'
 #
-# Created: Thu Nov 20 14:41:14 2014
+# Created: Thu Nov 20 21:29:01 2014
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -39,13 +39,13 @@ class Ui_musicList(object):
         self.musicTable = QtGui.QTableWidget(self.verticalLayoutWidget)
         self.musicTable.setGridStyle(QtCore.Qt.SolidLine)
         self.musicTable.setCornerButtonEnabled(True)
-        self.musicTable.setColumnCount(4)
+        self.musicTable.setColumnCount(3)
         self.musicTable.setObjectName(_fromUtf8("musicTable"))
         self.musicTable.setRowCount(0)
+        headers = ("Title", "Artist", "Time")
+        self.musicTable.setHorizontalHeaderLabels(headers)
         self.musicTable.verticalHeader().setVisible(True)
         self.musicTable.verticalHeader().setDefaultSectionSize(30)
-        headers = ("Title", "Artist", "Album", "Year")
-        self.musicTable.setHorizontalHeaderLabels(headers)
         self.verticalLayout.addWidget(self.musicTable)
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -58,7 +58,6 @@ class Ui_musicList(object):
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.verticalLayout.setStretch(0, 4)
         self.verticalLayout.setStretch(1, 1)
 
         self.retranslateUi(musicList)
