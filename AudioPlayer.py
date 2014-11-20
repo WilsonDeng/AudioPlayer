@@ -40,12 +40,12 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
 
         self.sources = []        #播放文件列表
         self.info = []
-        self.musicIndex = 0
 
         self.Form1 = QtGui.QDialog()
         self.ListUI = Ui_musicList()
         self.ListUI.setupUi(self.Form1)
         self.ListUI.addButton.clicked.connect(self.addFiles)
+        self.ListUI.deleteButton.clicked.connect(self.removeMusic)
         # self.ListUI.musicTable.cellClicked.connect(self.tableClicked)
         # self.ListUI.musicTable.cellDoubleClicked.connect(self.tableClicked)
         self.ListUI.musicTable.cellPressed.connect(self.tableClicked)
@@ -76,6 +76,29 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
 
         if self.sources:
             self.metaInformationResolver.setCurrentSource(self.sources[index])
+
+
+    def removeMusic(self):
+        seletedRows = self.ListUI.musicTable.selectedItems()
+        a = set()
+        for widget in seletedRows:
+            r = widget.row()
+            a.add(r)
+        index = self.sources.index(self.mediaObject.currentSource())
+        if index in a:
+            self.mediaObject.stop()
+        l = list(a)
+        l.reverse()
+        for r in l:
+            print r
+            self.ListUI.musicTable.removeRow(r)
+            self.sources.remove(self.sources[r])
+            self.info.remove(self.info[r])
+
+
+
+
+
 
 
 
