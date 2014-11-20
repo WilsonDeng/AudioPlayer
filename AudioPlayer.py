@@ -94,6 +94,7 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
             self.ListUI.musicTable.removeRow(r)
             self.sources.remove(self.sources[r])
             self.info.remove(self.info[r])
+            t = self.mediaObject.totalTime()
 
 
 
@@ -133,24 +134,19 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         artistItem.setFlags(artistItem.flags() ^ QtCore.Qt.ItemIsEditable)
         mdict.update(ARTIST=artist)
 
-        album = metaData.get('ALBUM', [''])[0]
-        albumItem = QtGui.QTableWidgetItem(album)
-        albumItem.setFlags(albumItem.flags() ^ QtCore.Qt.ItemIsEditable)
-        mdict.update(ALBUM=album)
-
-        year = metaData.get('DATE', [''])[0]
-        yearItem = QtGui.QTableWidgetItem(year)
-        yearItem.setFlags(yearItem.flags() ^ QtCore.Qt.ItemIsEditable)
-        mdict.update(DATE=year)
-
+        totaltime = self.metaInformationResolver.totalTime()
+        timeInStr =
+        displayTime = QtCore.QTime(0, (time / 60000) % 60, (time / 1000) % 60)
+        print totaltime
+        timeItem = QtGui.QTableWidgetItem(totaltime)
         self.info.append(mdict)
 
         currentRow = self.ListUI.musicTable.rowCount()       #显示音频信息
         self.ListUI.musicTable.insertRow(currentRow)
         self.ListUI.musicTable.setItem(currentRow, 0, titleItem)
         self.ListUI.musicTable.setItem(currentRow, 1, artistItem)
-        self.ListUI.musicTable.setItem(currentRow, 2, albumItem)
-        self.ListUI.musicTable.setItem(currentRow, 3, yearItem)
+        self.ListUI.musicTable.setItem(currentRow, 2, timeItem)
+
 
         if not self.ListUI.musicTable.selectedItems():
             self.ListUI.musicTable.selectRow(0)
