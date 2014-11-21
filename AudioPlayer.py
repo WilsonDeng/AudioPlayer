@@ -135,12 +135,11 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         mdict.update(ARTIST=artist)
 
         totaltime = self.metaInformationResolver.totalTime()
-        timeInStr =
-        displayTime = QtCore.QTime(0, (time / 60000) % 60, (time / 1000) % 60)
-        print totaltime
-        timeItem = QtGui.QTableWidgetItem(totaltime)
-        self.info.append(mdict)
+        displayTime = unicode((totaltime / 60000) % 60) + ':' + unicode((totaltime / 1000) % 60)
+        timeItem = QtGui.QTableWidgetItem(displayTime)
+        timeItem .setFlags(artistItem.flags() ^ QtCore.Qt.ItemIsEditable)
 
+        self.info.append(mdict)
         currentRow = self.ListUI.musicTable.rowCount()       #显示音频信息
         self.ListUI.musicTable.insertRow(currentRow)
         self.ListUI.musicTable.setItem(currentRow, 0, titleItem)
@@ -203,8 +202,7 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         ft.setBold(True)
         self.musicName.setFont(ft)
         self.musicName.setText(self.info[index].get('TITLE'))
-        self.albumAndSinger.setText(self.info[index].get('ARTIST')
-            + ' - ' + self.info[index].get('ALBUM'))
+        self.albumAndSinger.setText(self.info[index].get('ARTIST'))
 
 
     def sourceChanged(self, source):
