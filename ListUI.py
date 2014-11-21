@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'List.ui'
 #
-# Created: Thu Nov 20 21:29:01 2014
+# Created: Fri Nov 21 21:16:49 2014
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,22 +42,32 @@ class Ui_musicList(object):
         self.musicTable.setColumnCount(3)
         self.musicTable.setObjectName(_fromUtf8("musicTable"))
         self.musicTable.setRowCount(0)
-        headers = ("Title", "Artist", "Time")
-        self.musicTable.setHorizontalHeaderLabels(headers)
+        self.musicTable.horizontalHeader().setVisible(True)
+        self.musicTable.horizontalHeader().setDefaultSectionSize(127)
+        self.musicTable.horizontalHeader().setMinimumSectionSize(127)
+        self.musicTable.horizontalHeader().setSortIndicatorShown(False)
+        self.musicTable.horizontalHeader().setStretchLastSection(True)
         self.musicTable.verticalHeader().setVisible(True)
         self.musicTable.verticalHeader().setDefaultSectionSize(30)
+        self.musicTable.verticalHeader().setStretchLastSection(False)
         self.verticalLayout.addWidget(self.musicTable)
-        self.horizontalLayout = QtGui.QHBoxLayout()
-        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        self.addButton = QtGui.QPushButton(self.verticalLayoutWidget)
-        self.addButton.setObjectName(_fromUtf8("addButton"))
-        self.horizontalLayout.addWidget(self.addButton)
-        self.deleteButton = QtGui.QPushButton(self.verticalLayoutWidget)
+        self.widget = QtGui.QWidget(self.verticalLayoutWidget)
+        self.widget.setStyleSheet(_fromUtf8("background-color: rgb(166, 166, 166);"))
+        self.widget.setObjectName(_fromUtf8("widget"))
+        self.deleteButton = QtGui.QPushButton(self.widget)
+        self.deleteButton.setGeometry(QtCore.QRect(100, 10, 75, 23))
+        self.deleteButton.setStyleSheet(_fromUtf8("background-color: rgb(170, 170, 127);"))
         self.deleteButton.setObjectName(_fromUtf8("deleteButton"))
-        self.horizontalLayout.addWidget(self.deleteButton)
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.addButton = QtGui.QPushButton(self.widget)
+        self.addButton.setGeometry(QtCore.QRect(10, 10, 75, 23))
+        self.addButton.setStyleSheet(_fromUtf8("background-color: rgb(170, 170, 127);"))
+        self.addButton.setObjectName(_fromUtf8("addButton"))
+        self.modeButton = QtGui.QPushButton(self.widget)
+        self.modeButton.setGeometry(QtCore.QRect(190, 10, 75, 23))
+        self.modeButton.setStyleSheet(_fromUtf8("background-color: rgb(170, 170, 127);"))
+        self.modeButton.setObjectName(_fromUtf8("modeButton"))
+        self.verticalLayout.addWidget(self.widget)
+        self.verticalLayout.setStretch(0, 8)
         self.verticalLayout.setStretch(1, 1)
 
         self.retranslateUi(musicList)
@@ -65,6 +75,7 @@ class Ui_musicList(object):
 
     def retranslateUi(self, musicList):
         musicList.setWindowTitle(_translate("musicList", "Form", None))
-        self.addButton.setText(_translate("musicList", "Add", None))
-        self.deleteButton.setText(_translate("musicList", "Delete", None))
+        self.deleteButton.setText(_translate("musicList", "删除", None))
+        self.addButton.setText(_translate("musicList", "添加", None))
+        self.modeButton.setText(_translate("musicList", "mode", None))
 

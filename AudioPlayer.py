@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import sip, sys, time, thread
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 sip.setapi('QString', 2)
+import random
 from PyQt4 import QtGui, QtCore
 from PyQt4.phonon import Phonon
 from AudioPlayerUI import Ui_AudioPlayer
@@ -40,7 +43,6 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         #         QtGui.QSizePolicy.Maximum)
 
 
-
         self.sources = []  #播放文件列表
         self.info = []
 
@@ -55,9 +57,36 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         headers = ("Title", "Artist", "Time")
         self.ListUI.musicTable.setHorizontalHeaderLabels(headers)
 
+        self.playModes = [u'顺序播放', u'随机播放', u'单曲循环']
+        self.playmode = u'顺序播放'
+        self.ListUI.modeButton.setText(u'顺序播放')
+        self.ListUI.modeButton.clicked.connect(self.changeMode)
+
+
+        ft1 = QtGui.QFont()
+        ft1.setPointSize(10)
+
+        pa1 = QtGui.QPalette()
+        pa1.setColor(QtGui.QPalette.WindowText, QtGui.QColor(162, 208, 255))
+        self.nextLyric.setFont(ft1)
+        self.nextLyric.setPalette(pa1)
+
+        ft2 = QtGui.QFont()
+        ft2.setPointSize(12)
+        ft2.setBold(True)
+        pa2 = QtGui.QPalette()
+        pa2.setColor(QtGui.QPalette.WindowText, QtGui.QColor(0, 0, 255))
+        self.currentLyric.setFont(ft2)
+        self.currentLyric.setPalette(pa2)
+
+        self.showlyric = True
+        self.lyric.clicked.connect(self.setLyric)
 
     def showList(self):
 
+        if not self.Form1.isHidden():
+            self.Form1.hide()
+            return
         x = self.pos().x()
         y = self.pos().y()
         self.Form1.move(x - 415, y)
@@ -67,8 +96,9 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
 
     def addFiles(self):
         files = QtGui.QFileDialog.getOpenFileNames(self, "Select Music Files",
-                                                   QtGui.QDesktopServices.storageLocation(
-                                                       QtGui.QDesktopServices.MusicLocation))
+                                                   'music')
+        s = QtGui.QDesktopServices.storageLocation(
+                                                       QtGui.QDesktopServices.MusicLocation)
 
         if not files:
             return
@@ -119,7 +149,8 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         metaData = self.metaInformationResolver.metaData()
 
         title = metaData.get('TITLE', [''])[0]
-        title = title.encode('raw_unicode_escape').decode('gbk')
+        # if title[0] == '\\':
+        #     title = title.encode('raw_unicode_escape').decode('gbk')
         if not title:
             title = self.metaInformationResolver.currentSource().fileName()
 
@@ -128,7 +159,7 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         mdict = dict(TITLE=title)
 
         artist = metaData.get('ARTIST', [''])[0]
-        artist = artist.encode('raw_unicode_escape').decode('gbk')
+        # artist = artist.encode('raw_unicode_escape').decode('gbk')
         artistItem = QtGui.QTableWidgetItem(artist)
         artistItem.setFlags(artistItem.flags() ^ QtCore.Qt.ItemIsEditable)
         mdict.update(ARTIST=artist)
@@ -138,6 +169,17 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         timeItem = QtGui.QTableWidgetItem(displayTime)
         timeItem.setFlags(artistItem.flags() ^ QtCore.Qt.ItemIsEditable)
         mdict.update(Time=totaltime)
+
+        fileName = self.metaInformationResolver.currentSource().fileName().split('/')[-1]
+        fileName = fileName[:fileName.rfind('.')]
+        lyricName = fileName + '.lrc'
+        path = 'music\\' + lyricName
+        try:
+            with open(path, 'r+') as f:
+                lyricText = f.read()
+        except IOError:
+            lyricText = []
+        mdict.update(LYRIC=lyricText)
 
         self.info.append(mdict)
         currentRow = self.ListUI.musicTable.rowCount()  # 显示音频信息
@@ -213,12 +255,23 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
             index += 1
         self.ListUI.musicTable.selectRow(index)
         self.timeLcd.display('00:00')
+        self.showTitle()
+
 
 
     def aboutToFinish(self):
-        index = self.sources.index(self.mediaObject.currentSource()) + 1
-        if len(self.sources) > index:
-            self.mediaObject.enqueue(self.sources[index])  # enqueue动作触发currentSourceChanged信号
+        currentIndex = self.sources.index(self.mediaObject.currentSource())
+        if self.playmode == u'顺序播放':
+            index = currentIndex + 1
+        elif self.playmode == u'随机播放':
+            index = random.random() % len(self.sources)
+            while index == currentIndex:
+                index = random.random() % len(self.sources)
+        elif self.playmode == u'单曲循环':
+            index = currentIndex
+        if index >= len(self.sources):
+            index = 0
+        self.mediaObject.enqueue(self.sources[index])  # enqueue动作触发currentSourceChanged信号
 
 
     def tick(self, time):  # 显示播放时间
@@ -239,40 +292,33 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
 
 
     def showLyric(self, currentTime):
-        with open('a.lrc', 'r+') as fb:
-            lyrics = fb.read()
-            lines = lyrics.split('\n')
+        if not self.showlyric:
+            return
+        if self.mediaObject.state() != Phonon.PlayingState:
+            return
+        index = self.sources.index(self.mediaObject.currentSource())
+        lyricText = self.info[index].get('LYRIC')
+        if lyricText:
+            lines = lyricText.split('\n')
 
-        currentLyric = ''
-        nextLyric = ''
+            startline = 0
+            while lines[startline][1:3] != '00':
+                startline += 1
 
-        ft1 = QtGui.QFont()
-        ft1.setPointSize(10)
-        pa1 = QtGui.QPalette()
-        pa1.setColor(QtGui.QPalette.WindowText, QtGui.QColor(162, 208, 255))
-        self.nextLyric.setFont(ft1)
-        self.nextLyric.setPalette(pa1)
+            line = startline
+            while self.getTime(lines[line]) < currentTime:
+                line += 1
+            try:
+                currentLyric = lines[line-1][11:].decode('gbk')
+            except UnicodeDecodeError:
+                pass
+            self.currentLyric.setText(currentLyric)
 
-        ft2 = QtGui.QFont()
-        ft2.setPointSize(12)
-        pa2 = QtGui.QPalette()
-        pa2.setColor(QtGui.QPalette.WindowText, QtGui.QColor(0, 0, 255))
-        self.currentLyric.setFont(ft2)
-        self.currentLyric.setPalette(pa2)
-
-        startline = 4
-        line = startline
-
-        while self.getTime(lines[line]) < currentTime:
-            line += 1
-        currentLyric = lines[line-1][11:].decode('gbk')
-        self.currentLyric.setText(currentLyric)
-
-        if line+1 < len(lines):
-            nextLyric = lines[line][11:].decode('gbk')
-        else:
-            nextLyric = ''
-        self.nextLyric.setText(nextLyric)
+            if line+1 < len(lines):
+                nextLyric = lines[line][11:].decode('gbk')
+            else:
+                nextLyric = ''
+            self.nextLyric.setText(nextLyric)
 
 
 
@@ -282,6 +328,27 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
                               + float(s[7:9]) / 100 ) * 1000
         return lyricTime
 
+
+    def changeMode(self):
+        if self.playmode == u'顺序播放':
+            playmode = u'随机播放'
+            self.ListUI.modeButton.setText(u'随机播放')
+        elif self.playmode == u'随机播放':
+            playmode = u'单曲循环'
+            self.ListUI.modeButton.setText(u'单曲循环')
+        elif self.playmode == u'单曲循环':
+            playmode = u'顺序播放'
+            self.ListUI.modeButton.setText(u'顺序播放')
+        self.playmode = playmode
+
+
+    def setLyric(self):
+        if self.showlyric:
+            self.showlyric = False
+            self.currentLyric.setText('')
+            self.nextLyric.setText('')
+        else:
+            self.showlyric = True
 
 
 if __name__ == '__main__':
