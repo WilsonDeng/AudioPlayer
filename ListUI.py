@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'List.ui'
 #
-# Created: Fri Nov 21 21:16:49 2014
+# Created: Sat Nov 22 20:34:09 2014
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -52,19 +52,19 @@ class Ui_musicList(object):
         self.musicTable.verticalHeader().setStretchLastSection(False)
         self.verticalLayout.addWidget(self.musicTable)
         self.widget = QtGui.QWidget(self.verticalLayoutWidget)
-        self.widget.setStyleSheet(_fromUtf8("background-color: rgb(166, 166, 166);"))
+        self.widget.setStyleSheet(_fromUtf8("background-color: rgb(236, 236, 236);"))
         self.widget.setObjectName(_fromUtf8("widget"))
-        self.deleteButton = QtGui.QPushButton(self.widget)
-        self.deleteButton.setGeometry(QtCore.QRect(100, 10, 75, 23))
-        self.deleteButton.setStyleSheet(_fromUtf8("background-color: rgb(170, 170, 127);"))
-        self.deleteButton.setObjectName(_fromUtf8("deleteButton"))
         self.addButton = QtGui.QPushButton(self.widget)
-        self.addButton.setGeometry(QtCore.QRect(10, 10, 75, 23))
-        self.addButton.setStyleSheet(_fromUtf8("background-color: rgb(170, 170, 127);"))
+        self.addButton.setGeometry(QtCore.QRect(20, 10, 75, 23))
+        self.addButton.setStyleSheet(_fromUtf8("border-image: url(:/icons/off.png);"))
         self.addButton.setObjectName(_fromUtf8("addButton"))
+        self.deleteButton = QtGui.QPushButton(self.widget)
+        self.deleteButton.setGeometry(QtCore.QRect(150, 10, 75, 23))
+        self.deleteButton.setStyleSheet(_fromUtf8("border-image: url(:/icons/off.png);"))
+        self.deleteButton.setObjectName(_fromUtf8("deleteButton"))
         self.modeButton = QtGui.QPushButton(self.widget)
-        self.modeButton.setGeometry(QtCore.QRect(190, 10, 75, 23))
-        self.modeButton.setStyleSheet(_fromUtf8("background-color: rgb(170, 170, 127);"))
+        self.modeButton.setGeometry(QtCore.QRect(280, 10, 75, 23))
+        self.modeButton.setStyleSheet(_fromUtf8("border-image: url(:/icons/off.png);"))
         self.modeButton.setObjectName(_fromUtf8("modeButton"))
         self.verticalLayout.addWidget(self.widget)
         self.verticalLayout.setStretch(0, 8)
@@ -75,7 +75,8 @@ class Ui_musicList(object):
 
     def retranslateUi(self, musicList):
         musicList.setWindowTitle(_translate("musicList", "Form", None))
-        self.deleteButton.setText(_translate("musicList", "删除", None))
-        self.addButton.setText(_translate("musicList", "添加", None))
-        self.modeButton.setText(_translate("musicList", "mode", None))
+        self.addButton.setText(_translate("musicList", "添加音乐", None))
+        self.deleteButton.setText(_translate("musicList", "删除音乐", None))
+        self.modeButton.setText(_translate("musicList", "顺序播放", None))
 
+import buttonIcon_rc

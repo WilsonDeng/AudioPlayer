@@ -11,6 +11,12 @@ from AudioPlayerUI import Ui_AudioPlayer
 from ListUI import Ui_musicList
 
 
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
 class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
     def __init__(self):
         super(QtGui.QMainWindow, self).__init__()
@@ -33,7 +39,6 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         # self.setupActions()
         self.list.clicked.connect(self.showList)
         self.play.clicked.connect(self.clickPlay)
-        self.pause.clicked.connect(self.mediaObject.pause)
         self.stop.clicked.connect(self.mediaObject.stop)
 
         self.timeLcd.display("00:00")
@@ -80,9 +85,13 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         self.currentLyric.setPalette(pa2)
 
         self.showlyric = True
+
         self.lyric.clicked.connect(self.setLyric)
 
     def showList(self):
+
+        self.list.setStyleSheet(_fromUtf8("border-image: url(:/icons/on.png);"))
+
 
         if not self.Form1.isHidden():
             self.Form1.hide()
@@ -93,23 +102,22 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         self.Form1.show()
         self.Form1.exec_()
 
+        self.list.setStyleSheet(_fromUtf8("border-image: url(:/icons/off.png);"))
+
 
     def addFiles(self):
+
+        self.ListUI.addButton.setStyleSheet(_fromUtf8("border-image: url(:/icons/on.png);"))
         files = QtGui.QFileDialog.getOpenFileNames(self, "Select Music Files",
                                                    'music')
-        s = QtGui.QDesktopServices.storageLocation(
-                                                       QtGui.QDesktopServices.MusicLocation)
-
         if not files:
             return
-
         index = len(self.sources)
-
         for string in files:  # 同时添加多个文件时的处理
             self.sources.append(Phonon.MediaSource(string))
-
         if self.sources:
             self.metaInformationResolver.setCurrentSource(self.sources[index])
+        self.ListUI.addButton.setStyleSheet(_fromUtf8("border-image: url(:/icons/off.png);"))
 
 
     def removeMusic(self):
@@ -214,27 +222,28 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
                                           self.mediaObject.errorString())
 
         elif newState == Phonon.PlayingState:
-            self.play.setEnabled(False)
-            self.pause.setEnabled(True)
             self.stop.setEnabled(True)
 
         elif newState == Phonon.StoppedState:
             self.stop.setEnabled(False)
             self.play.setEnabled(True)
-            self.pause.setEnabled(False)
             self.timeLcd.display("00:00")
 
         elif newState == Phonon.PausedState:
-            self.pause.setEnabled(False)
             self.stop.setEnabled(True)
             self.play.setEnabled(True)
 
 
     def clickPlay(self):
-        self.showTitle()
-        # thread.start_new_thread(self.showLyric, ('a.lrc', ))
-        self.mediaObject.play()
-        # self.mediaObject.play()
+
+        if self.mediaObject.state() == Phonon.PlayingState:
+            self.mediaObject.pause()
+            self.play.setStyleSheet(_fromUtf8("border-image: url(:/icons/play.png);"))
+            self.play.setGeometry(QtCore.QRect(130, 40, 48, 48))
+        else:
+            self.mediaObject.play()
+            self.play.setStyleSheet(_fromUtf8("border-image: url(:/icons/pause.png);"))
+            self.play.setGeometry(QtCore.QRect(128, 40, 50, 50))
 
 
 
@@ -264,9 +273,9 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         if self.playmode == u'顺序播放':
             index = currentIndex + 1
         elif self.playmode == u'随机播放':
-            index = random.random() % len(self.sources)
+            index = random.randint(0, len(self.sources) - 1)
             while index == currentIndex:
-                index = random.random() % len(self.sources)
+                index = random.randint(0, len(self.sources) - 1)
         elif self.playmode == u'单曲循环':
             index = currentIndex
         if index >= len(self.sources):
@@ -280,7 +289,6 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         self.showLyric(time)
 
     def tableClicked(self, row, column):  # 点击音频列表时的反应
-        wasPlaying = (self.mediaObject.state() == Phonon.PlayingState)
 
         self.mediaObject.stop()
         self.mediaObject.clearQueue()
@@ -306,16 +314,19 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
                 startline += 1
 
             line = startline
-            while self.getTime(lines[line]) < currentTime:
+            while line < len(lines) and self.getTime(lines[line]) < currentTime:
                 line += 1
             try:
                 currentLyric = lines[line-1][11:].decode('gbk')
             except UnicodeDecodeError:
-                pass
+                currentLyric = lines[line-1][11:]
             self.currentLyric.setText(currentLyric)
 
             if line+1 < len(lines):
-                nextLyric = lines[line][11:].decode('gbk')
+                try:
+                    nextLyric = lines[line][11:].decode('gbk')
+                except UnicodeDecodeError:
+                    nextLyric = lines[line][11:]
             else:
                 nextLyric = ''
             self.nextLyric.setText(nextLyric)
@@ -345,10 +356,12 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
     def setLyric(self):
         if self.showlyric:
             self.showlyric = False
+            self.lyric.setStyleSheet(_fromUtf8("border-image: url(:/icons/off.png);"))
             self.currentLyric.setText('')
             self.nextLyric.setText('')
         else:
             self.showlyric = True
+            self.lyric.setStyleSheet(_fromUtf8("border-image: url(:/icons/on.png);"))
 
 
 if __name__ == '__main__':
