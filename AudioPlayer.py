@@ -5,7 +5,7 @@ sys.setdefaultencoding('utf-8')
 
 sip.setapi('QString', 2)
 import random
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui, QtCore, Qt
 from PyQt4.phonon import Phonon
 from AudioPlayerUI import Ui_AudioPlayer
 from ListUI import Ui_musicList
@@ -38,8 +38,13 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
 
         # self.setupActions()
         self.list.clicked.connect(self.showList)
-        self.play.clicked.connect(self.clickPlay)
-        self.stop.clicked.connect(self.mediaObject.stop)
+        self.playButton.clicked.connect(self.clickPlay)
+        self.stopButton.clicked.connect(self.mediaObject.stop)
+        self.nextButton.clicked.connect(self.nextSong)
+        self.prevButton.clicked.connect(self.lastSong)
+        self.closeButton.clicked.connect(app.exit)
+        self.minimizeButton.clicked.connect(self.showMinimized)
+
 
         self.timeLcd.display("00:00")
         self.seekSlider.setMediaObject(self.mediaObject)
@@ -50,17 +55,21 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
 
         self.sources = []  #播放文件列表
         self.info = []
+        self.isAboutToFinish = False
 
-        self.Form1 = QtGui.QDialog()
+        self.listWindow = ListForm()
         self.ListUI = Ui_musicList()
-        self.ListUI.setupUi(self.Form1)
+        self.ListUI.setupUi(self.listWindow)
         self.ListUI.addButton.clicked.connect(self.addFiles)
         self.ListUI.deleteButton.clicked.connect(self.removeMusic)
-        # self.ListUI.musicTable.cellClicked.connect(self.tableClicked)
-        # self.ListUI.musicTable.cellDoubleClicked.connect(self.tableClicked)
+        self.ListUI.musicTable.cellClicked.connect(self.tableClicked)
+        self.ListUI.musicTable.cellDoubleClicked.connect(self.tableClicked)
         self.ListUI.musicTable.cellPressed.connect(self.tableClicked)
         headers = ("Title", "Artist", "Time")
         self.ListUI.musicTable.setHorizontalHeaderLabels(headers)
+        self.ListUI.musicTable.setFrameShape(QtGui.QFrame.WinPanel)
+        self.ListUI.musicTable.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.ListUI.musicTable.setAlternatingRowColors(True)
 
         self.playModes = [u'顺序播放', u'随机播放', u'单曲循环']
         self.playmode = u'顺序播放'
@@ -88,19 +97,34 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
 
         self.lyric.clicked.connect(self.setLyric)
 
+        self.dPos = Qt.QPoint()
+        self.mousePos = Qt.QPoint()
+        self.windowPos = Qt.QPoint()
+
+        self.qm = QtGui.QBitmap(self.centralwidget.size())
+        self.qm.fill()
+        self.qp = QtGui.QPainter(self.qm)
+        self.qp.setPen(Qt.Qt.black)
+        self.qp.setBrush(Qt.Qt.black)
+        self.qp.drawRoundedRect(self.qm.rect(), 20, 20)
+        self.setMask(self.qm)
+
+
+
+
+
+
     def showList(self):
-
         self.list.setStyleSheet(_fromUtf8("border-image: url(:/icons/on.png);"))
-
-
-        if not self.Form1.isHidden():
-            self.Form1.hide()
+        if not self.listWindow.isHidden():
+            self.listWindow.hide()
             return
         x = self.pos().x()
         y = self.pos().y()
-        self.Form1.move(x - 415, y)
-        self.Form1.show()
-        self.Form1.exec_()
+        self.listWindow.move(x - 401, y)
+        self.listWindow.setWindowFlags(Qt.Qt.FramelessWindowHint)
+        self.listWindow.show()
+        self.listWindow.exec_()
 
         self.list.setStyleSheet(_fromUtf8("border-image: url(:/icons/off.png);"))
 
@@ -157,8 +181,7 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         metaData = self.metaInformationResolver.metaData()
 
         title = metaData.get('TITLE', [''])[0]
-        # if title[0] == '\\':
-        #     title = title.encode('raw_unicode_escape').decode('gbk')
+        title = self.decodeGBK(title)
         if not title:
             title = self.metaInformationResolver.currentSource().fileName()
 
@@ -167,7 +190,7 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         mdict = dict(TITLE=title)
 
         artist = metaData.get('ARTIST', [''])[0]
-        # artist = artist.encode('raw_unicode_escape').decode('gbk')
+        artist = self.decodeGBK(artist)
         artistItem = QtGui.QTableWidgetItem(artist)
         artistItem.setFlags(artistItem.flags() ^ QtCore.Qt.ItemIsEditable)
         mdict.update(ARTIST=artist)
@@ -222,28 +245,28 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
                                           self.mediaObject.errorString())
 
         elif newState == Phonon.PlayingState:
-            self.stop.setEnabled(True)
+            self.stopButton.setEnabled(True)
 
         elif newState == Phonon.StoppedState:
-            self.stop.setEnabled(False)
-            self.play.setEnabled(True)
+            self.stopButton.setEnabled(False)
+            self.playButton.setEnabled(True)
             self.timeLcd.display("00:00")
 
         elif newState == Phonon.PausedState:
-            self.stop.setEnabled(True)
-            self.play.setEnabled(True)
+            self.stopButton.setEnabled(True)
+            self.playButton.setEnabled(True)
 
 
     def clickPlay(self):
 
         if self.mediaObject.state() == Phonon.PlayingState:
             self.mediaObject.pause()
-            self.play.setStyleSheet(_fromUtf8("border-image: url(:/icons/play.png);"))
-            self.play.setGeometry(QtCore.QRect(130, 40, 48, 48))
+            self.playButton.setStyleSheet(_fromUtf8("border-image: url(:/icons/play.png);"))
+            self.playButton.setGeometry(QtCore.QRect(130, 40, 48, 48))
         else:
             self.mediaObject.play()
-            self.play.setStyleSheet(_fromUtf8("border-image: url(:/icons/pause.png);"))
-            self.play.setGeometry(QtCore.QRect(128, 40, 50, 50))
+            self.playButton.setStyleSheet(_fromUtf8("border-image: url(:/icons/pause.png);"))
+            self.playButton.setGeometry(QtCore.QRect(128, 40, 50, 50))
 
 
 
@@ -265,6 +288,7 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         self.ListUI.musicTable.selectRow(index)
         self.timeLcd.display('00:00')
         self.showTitle()
+        self.isAboutToFinish = False
 
 
 
@@ -281,7 +305,7 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
         if index >= len(self.sources):
             index = 0
         self.mediaObject.enqueue(self.sources[index])  # enqueue动作触发currentSourceChanged信号
-
+        self.isAboutToFinish = True
 
     def tick(self, time):  # 显示播放时间
         displayTime = QtCore.QTime(0, (time / 60000) % 60, (time / 1000) % 60)
@@ -297,13 +321,19 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
 
         self.showTitle()
         self.mediaObject.play()
-
+        self.playButton.setStyleSheet(_fromUtf8("border-image: url(:/icons/pause.png);"))
+        self.playButton.setGeometry(QtCore.QRect(128, 40, 50, 50))
 
     def showLyric(self, currentTime):
         if not self.showlyric:
             return
         if self.mediaObject.state() != Phonon.PlayingState:
             return
+        if self.isAboutToFinish:
+            self.currentLyric.setText('')
+            return
+
+
         index = self.sources.index(self.mediaObject.currentSource())
         lyricText = self.info[index].get('LYRIC')
         if lyricText:
@@ -314,21 +344,26 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
                 startline += 1
 
             line = startline
-            while line < len(lines) and self.getTime(lines[line]) < currentTime:
-                line += 1
-            try:
-                currentLyric = lines[line-1][11:].decode('gbk')
-            except UnicodeDecodeError:
-                currentLyric = lines[line-1][11:]
-            self.currentLyric.setText(currentLyric)
+            if currentTime < self.getTime(lines[startline]):       # 前奏时暂不显示歌词
+                return
 
-            if line+1 < len(lines):
+
+            while line+1 < len(lines) and self.getTime(lines[line]) < currentTime:
+                line += 1
+            if line+1 < len(lines) or self.getTime(lines[line]) > currentTime:
                 try:
+                    currentLyric = lines[line-1][11:].decode('gbk')
                     nextLyric = lines[line][11:].decode('gbk')
                 except UnicodeDecodeError:
+                    currentLyric = lines[line-1][11:]
                     nextLyric = lines[line][11:]
             else:
+                try:
+                    currentLyric = lines[line][11:].decode('gbk')
+                except UnicodeDecodeError:
+                    currentLyric = lines[line][11:]
                 nextLyric = ''
+            self.currentLyric.setText(currentLyric)
             self.nextLyric.setText(nextLyric)
 
 
@@ -364,12 +399,70 @@ class music_player(QtGui.QMainWindow, Ui_AudioPlayer):
             self.lyric.setStyleSheet(_fromUtf8("border-image: url(:/icons/on.png);"))
 
 
+    def decodeGBK(self, s):
+        try:
+            s.encode('gbk')
+        except UnicodeEncodeError:
+            return s.encode('raw_unicode_escape').decode('gbk')
+        else:
+            return s
+
+
+    def mousePressEvent(self, event=Qt.QMouseEvent):
+        self.windowPos = self.pos()
+        self.mousePos = event.globalPos()
+        self.dPos = self.mousePos - self.windowPos
+
+
+    def mouseMoveEvent(self, event=Qt.QMouseEvent):
+        self.move(event.globalPos() - self.dPos)
+
+
+    def nextSong(self):
+        currentIndex = self.sources.index(self.mediaObject.currentSource())
+        nextIndex = (currentIndex + 1) % len(self.sources)
+        self.mediaObject.setCurrentSource(self.sources[nextIndex])
+        self.mediaObject.play()
+
+
+    def lastSong(self):
+        currentIndex = self.sources.index(self.mediaObject.currentSource())
+        if currentIndex > 0:
+            lastIndex = currentIndex - 1
+        else:
+            lastIndex =currentIndex
+        self.mediaObject.setCurrentSource(self.sources[lastIndex])
+        self.mediaObject.play()
+
+
+
+
+class ListForm(QtGui.QDialog):
+    def __init__(self):
+        super(QtGui.QDialog, self).__init__()
+        self.dPos = Qt.QPoint()
+        self.mousePos = Qt.QPoint()
+        self.windowPos = Qt.QPoint()
+
+
+
+    def mousePressEvent(self, event=Qt.QMouseEvent):
+        self.windowPos = self.pos()
+        self.mousePos = event.globalPos()
+        self.dPos = self.mousePos - self.windowPos
+
+    def mouseMoveEvent(self, event=Qt.QMouseEvent):
+        self.move(event.globalPos() - self.dPos)
+
+
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     app.setApplicationName("Music Player")
     app.setQuitOnLastWindowClosed(True)
 
     window = music_player()
+
+    window.setWindowFlags(Qt.Qt.FramelessWindowHint)
     window.show()
 
     sys.exit(app.exec_())

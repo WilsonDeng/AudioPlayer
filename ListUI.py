@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'List.ui'
 #
-# Created: Sat Nov 22 20:34:09 2014
+# Created: Tue Nov 25 16:36:43 2014
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,9 +26,10 @@ except AttributeError:
 class Ui_musicList(object):
     def setupUi(self, musicList):
         musicList.setObjectName(_fromUtf8("musicList"))
-        musicList.resize(400, 400)
-        musicList.setMinimumSize(QtCore.QSize(400, 400))
-        musicList.setMaximumSize(QtCore.QSize(400, 400))
+        musicList.resize(403, 400)
+        musicList.setMinimumSize(QtCore.QSize(403, 400))
+        musicList.setMaximumSize(QtCore.QSize(403, 400))
+        musicList.setStyleSheet(_fromUtf8(""))
         self.verticalLayoutWidget = QtGui.QWidget(musicList)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 401, 401))
         self.verticalLayoutWidget.setObjectName(_fromUtf8("verticalLayoutWidget"))
@@ -37,8 +38,12 @@ class Ui_musicList(object):
         self.verticalLayout.setMargin(0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.musicTable = QtGui.QTableWidget(self.verticalLayoutWidget)
+        self.musicTable.setEnabled(True)
+        self.musicTable.setMaximumSize(QtCore.QSize(16777200, 16777215))
+        self.musicTable.setFrameShape(QtGui.QFrame.WinPanel)
+        self.musicTable.setFrameShadow(QtGui.QFrame.Sunken)
         self.musicTable.setGridStyle(QtCore.Qt.SolidLine)
-        self.musicTable.setCornerButtonEnabled(True)
+        self.musicTable.setCornerButtonEnabled(False)
         self.musicTable.setColumnCount(3)
         self.musicTable.setObjectName(_fromUtf8("musicTable"))
         self.musicTable.setRowCount(0)
