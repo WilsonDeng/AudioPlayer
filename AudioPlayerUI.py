@@ -149,15 +149,7 @@ class Ui_AudioPlayer(object):
         self.minimizeButton.setObjectName(_fromUtf8("minimizeButton"))
         self.verticalLayout.addWidget(self.widget)
         AudioPlayer.setCentralWidget(self.centralwidget)
-        self.statusBar = QtGui.QStatusBar(AudioPlayer)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.statusBar.sizePolicy().hasHeightForWidth())
-        self.statusBar.setSizePolicy(sizePolicy)
-        self.statusBar.setBaseSize(QtCore.QSize(400, 23))
-        self.statusBar.setObjectName(_fromUtf8("statusBar"))
-        AudioPlayer.setStatusBar(self.statusBar)
+
 
         self.retranslateUi(AudioPlayer)
         QtCore.QMetaObject.connectSlotsByName(AudioPlayer)

@@ -7,7 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, Qt
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -77,6 +77,14 @@ class Ui_musicList(object):
 
         self.retranslateUi(musicList)
         QtCore.QMetaObject.connectSlotsByName(musicList)
+        self.qm = QtGui.QBitmap(musicList.size())
+        self.qm.fill()
+        self.qp = QtGui.QPainter(self.qm)
+        self.qp.setPen(Qt.Qt.black)
+        self.qp.setBrush(Qt.Qt.black)
+        self.qp.drawRoundedRect(self.qm.rect(), 15, 15)
+        musicList.setMask(self.qm)
+
 
     def retranslateUi(self, musicList):
         musicList.setWindowTitle(_translate("musicList", "Form", None))
